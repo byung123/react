@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
 import "./App.css";
+import Swal from "sweetalert2";
 
 // 문제2 : ch10_2에서 삭제 버튼 만들기
 function App() {
+
     const emptyUser = {
         username: "",
         password: "",
@@ -47,9 +49,53 @@ function App() {
         })
     }
 
-    const handleDelete = (index) => {
-        const userList = userList.filter((user) => user.index !== index);
-        setUserList({...userList});
+    const handleEditClick = (key, index) => {
+        Swal.fire({
+            title: `${key} edit`,
+            input: "text",
+            inputValue: userList[index][key],
+            showCancelButton: true,
+            cancelButtonText: "취소",
+            confirmButtonText: "확인"
+        }).then(result => {
+            if(result.isConfirmed) {
+                setUserList(userList => [ ...userList.map((user, i) => {
+                    if(i === index) {
+                        return {
+                            ...user,
+                            [key]: result.value
+                        }
+                    }
+                    return user;
+                }) ]);
+            }
+        })
+    }
+
+    // const handleDeleteClick = (index) => {  // 내가 적은것 -> 실행 안됨 -> parseInt 안적어서 그런가?
+    //     const userList = userList.filter((user) => user.index !== index);
+    //     setUserList({...userList});
+    // }
+
+    // javascript에선 생략 가능하지만, react에선 window.을 붙이고 confirm을 사용해야 한다
+    const handleDeleteClick = (e) => {
+        Swal.fire({
+            title: "사용자 삭제",
+            text: "해당사용자를 삭제하시겠습니까?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "삭제",
+            confirmButtonColor: "red",
+            cancelButtonText: "취소"
+        }).then(result => {
+            if(result.isConfirmed) {
+                setUserList(userList => [ ...userList.filter((user, index) => index !== parseInt(e.target.value)) ])                
+            }
+        });
+
+        // if(window.confirm("해당 사용자를 삭제하시겠습니까?")) {
+        //     setUserList(userList => [ ...userList.filter((user, index) => index !== parseInt(e.target.value)) ])
+        // }
     }
         
     return <>
@@ -84,6 +130,7 @@ function App() {
                     <th>username</th>
                     <th>password</th>
                     <th>name</th>
+                    <th>수정</th>
                     <th>삭제</th>
                 </tr>
             </thead>
@@ -93,10 +140,16 @@ function App() {
                         return ( // return 내용을 하나의 값으로 묶기 위해 괄호로 묶을 수 있음
                             <tr key={index}>
                                 <td>{index + 1}</td> 
-                                <td>{username}</td> 
-                                <td>{password}</td> 
-                                <td>{name}</td> 
-                                <button text={"삭제"} onclick={handleDelete}></button>
+                                <td onClick={() => handleEditClick("username", index)}>{username}</td> 
+                                <td onClick={() => handleEditClick("password", index)}>{password}</td> 
+                                <td onClick={() => handleEditClick("name", index)}>{name}</td> 
+                                <td>
+                                    <button value={index}>수정</button>    
+                                </td> 
+                                {/* <button text={"삭제"} onclick={handleDelete}></button> */}
+                                <td>
+                                    <button value={index} onClick={handleDeleteClick}>삭제</button>
+                                </td>
                             </tr>
                         );
                     })
