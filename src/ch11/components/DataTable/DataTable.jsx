@@ -1,17 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DataTableBody from "../DataTableBody/DataTableBody";
 import DataTableHeader from "../DataTableHeader/DataTableHeader";
 import "./style.css";
 import { SAMPLE_PRODUCTS } from "../../constants/sampleProducts";
 
 function DataTable() {
+    const [ isLoad, setLoad ] = useState(false);
     const [ mode, setMode ] = useState(0); // 0 = 조회, 1 = 추가, 2= 수정, 3 = 삭제
     const [ products, setProducts ] = useState([ ...SAMPLE_PRODUCTS]);
+    const [ isDeleting, setDeleting ] = useState(false);
+
+    // 새로고침 해도 계속 남아있음
+    useEffect(() => {
+        const lsProducts = localStorage.getItem("products");
+        // isProducts가 null이면 빈 배열 있으면 기존에 있던 lsProducts 가져옴 
+        setProducts(!lsProducts ? [] : JSON.parse(lsProducts));        
+        setLoad(true);
+    }, []);
+
+    // ch12에 개념 나와있음
+    useEffect(() => {
+        localStorage.setItem("products", JSON.stringify(products));
+    }, [products]);
 
     return ( 
         <div className="table-main-container">
-            <DataTableHeader mode={mode} setMode={setMode} />
-            <DataTableBody mode={mode} products={products} />
+            <DataTableHeader mode={mode} setMode={setMode} setProducts={setProducts} setDeleting={setDeleting}/>
+            <DataTableBody mode={mode} setMode={setMode} products={products} setProducts={setProducts} isDeleting={isDeleting} setDeleting={setDeleting} />
         </div>
     );
 }
