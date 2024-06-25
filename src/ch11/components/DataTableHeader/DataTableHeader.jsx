@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./style.css";
 import Swal from "sweetalert2";
 
-function DataTableHeader({ mode, setMode, setProducts, setDeleting }) {
+function DataTableHeader({ mode, setMode, products, setProducts, setDeleting, editProductId }) {
 
     const emptyProduct = {
         id: "",
@@ -20,6 +20,13 @@ function DataTableHeader({ mode, setMode, setProducts, setDeleting }) {
     }
 
     const [ inputData, setInputData ] = useState({ ...emptyProduct });
+
+    useEffect(() => {
+        // 비구조로 요소를 꺼내옴 - 배열상태를 저장시키면 안되기 때문
+        const [ product ] = products.filter(product => product.id === editProductId)
+        setInputData(!product ? { ...emptyProduct } : { ...product }) 
+
+    }, [editProductId])
 
     const handleInputChange = (e) => {
         // 객체를 리턴하고 싶으면 괄호를 하나 더 추가하면 됨
@@ -72,7 +79,28 @@ function DataTableHeader({ mode, setMode, setProducts, setDeleting }) {
             resetMode();
         }   
         if(mode === 2) {
-            alert("상품수정");
+            Swal.fire({
+                title: "상품 정보 수정",
+                showCancelButton: true,
+                confirmButtonText: "확인",
+                cancelButtonText: "취소"
+            }).then(result => {
+                if(result.isConfirmed) {
+                    setProducts(products => [
+                        ...products.map(product => {
+                            if(product.id === editProductId) {
+                                const { id, ...rest } = inputData;
+                                return {
+                                    ...product,
+                                    ...rest
+                                }
+                            }
+                            return product;
+                         })
+                    ]);
+                    resetMode();
+                }
+            });
         }
         if(mode === 3) {
             Swal.fire({

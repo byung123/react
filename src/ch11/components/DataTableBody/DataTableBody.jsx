@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./style.css";
 
-function DataTableBody({ mode, setMode, products, setProducts, isDeleting, setDeleting}) {
+function DataTableBody({ mode, setMode, products, setProducts, isDeleting, setDeleting, setEditProductId}) {
 
     //useEffect()에서 어차피 전부 체크 해제 될 것이라 빈 배열로 만듦 
     const [ viewProducts, setViewProducts ] = useState([]);
@@ -37,6 +37,14 @@ function DataTableBody({ mode, setMode, products, setProducts, isDeleting, setDe
             }
     }, [isDeleting])
 
+    useEffect(() => {
+        if(mode === 2) {
+            const [ selectedProduct ] = viewProducts.filter(product => product.isChecked);
+
+            setEditProductId(!selectedProduct ? 0 : selectedProduct.id);
+        }
+    }, [viewProducts])
+
     const resetViewProducts = () => {
         // 전부 반복 돌려서 체크를 false로 바꾸기
         setViewProducts([ ...products.map(product => ({ ...product, isChecked: false}))])
@@ -55,6 +63,7 @@ function DataTableBody({ mode, setMode, products, setProducts, isDeleting, setDe
     
     const handleCheckedChange = (e) => {
         if(mode === 2) {
+
             setViewProducts(viewProducts => {
                 return [ ...viewProducts.map(product => {
                     if(product.id === parseInt(e.target.value)) {
